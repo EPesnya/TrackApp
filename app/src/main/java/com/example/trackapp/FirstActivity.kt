@@ -3,7 +3,6 @@ package com.example.trackapp
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.PersistableBundle
 import android.widget.Button
 import android.widget.TextView
 
@@ -36,6 +35,7 @@ class FirstActivity : AppCompatActivity() {
     var timerOn = false
     lateinit var button: Button
     lateinit var numText: TextView
+    var stopped = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +54,7 @@ class FirstActivity : AppCompatActivity() {
 
         button.setOnClickListener {
             if (!timerOn) {
-                myTimer = CountUpTimer(130000, 1000)
+                myTimer = CountUpTimer(1000000, 1000)
                 myTimer?.start()
             }
             else {
@@ -83,5 +83,23 @@ class FirstActivity : AppCompatActivity() {
             outState.putBoolean("TIMER_STATE", timerOn)
         }
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onStop() {
+        stopped = true
+        myTimer?.cancel()
+        super.onStop()
+    }
+
+    override fun onStart() {
+        if (stopped && timerOn) {
+            myTimer?.let {
+                val startTime = it.millisInFuture
+                myTimer = CountUpTimer(it.millisUntilFinished, 1000)
+                myTimer?.millisInFuture = startTime
+                myTimer?.start()
+            }
+        }
+        super.onStart()
     }
 }
