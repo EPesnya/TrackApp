@@ -8,7 +8,7 @@ import android.widget.TextView
 
 class FirstActivity : AppCompatActivity() {
 
-    inner class CountUpTimer(var millisInFuture: Long, countDownInterval: Long) : CountDownTimer(millisInFuture, countDownInterval) {
+    inner class CountUpTimer(private val textView: TextView, private val button: Button, var millisInFuture: Long, countDownInterval: Long) : CountDownTimer(millisInFuture, countDownInterval) {
 
         var millisUntilFinished: Long = 0
 
@@ -19,15 +19,34 @@ class FirstActivity : AppCompatActivity() {
 
         override fun onTick(millisUntilFinished: Long) {
             this.millisUntilFinished = millisUntilFinished
-            val count: Int = ((millisInFuture - millisUntilFinished)/1000).toInt()
-            if (count % 100 in 10..19)
-                this@FirstActivity.numText.text = "${hundredsNames[count / 100]} ${tenNames[count % 10]}"
-            else
-                this@FirstActivity.numText.text = "${hundredsNames[count / 100]} ${decadesNames[count / 10 % 10]} ${oneNames[count % 10]}"
+            showTime()
         }
 
         override fun onFinish() {
-            this@FirstActivity.changeTimerState()
+            textView.text = ""
+            button.text = "Start"
+            timerOn = false
+        }
+
+        fun changeTimerState() {
+            if (timerOn) {
+                this.cancel()
+                button.text = "Start"
+                timerOn = false
+            }
+            else {
+                this.start()
+                button.text = "Stop"
+                timerOn = true
+            }
+        }
+
+        fun showTime() {
+            val count: Int = ((millisInFuture - millisUntilFinished)/1000).toInt()
+            if (count % 100 in 10..19)
+                textView.text = "${hundredsNames[count / 100]} ${tenNames[count % 10]}"
+            else
+                textView.text = "${hundredsNames[count / 100]} ${decadesNames[count / 10 % 10]} ${oneNames[count % 10]}"
         }
     }
 
@@ -44,35 +63,24 @@ class FirstActivity : AppCompatActivity() {
         button = findViewById(R.id.button)
 
         savedInstanceState?.run {
-            if (getBoolean("TIMER_STATE")) {
-                myTimer = CountUpTimer(getLong("UNTIL_TIME"), 1000)
+            if (getLong("UNTIL_TIME").toInt() != 0) {
+                myTimer = CountUpTimer(numText, button, getLong("UNTIL_TIME"), 1000)
                 myTimer?.millisInFuture = getLong("TIMER_TIME")
-                changeTimerState()
-                myTimer?.start()
+                myTimer?.millisUntilFinished = getLong("UNTIL_TIME")
+                myTimer?.showTime()
+                if (getBoolean("TIMER_STATE")) {
+                    myTimer?.changeTimerState()
+                }
             }
         }
 
         button.setOnClickListener {
             if (!timerOn) {
-                myTimer = CountUpTimer(1000000, 1000)
-                myTimer?.start()
+                val startTime: Long = myTimer?.millisInFuture?: 1000000
+                myTimer = CountUpTimer(numText, button, myTimer?.millisUntilFinished?: 1000000, 1000)
+                myTimer?.millisInFuture = startTime
             }
-            else {
-                myTimer?.cancel()
-            }
-            changeTimerState()
-        }
-    }
-
-    fun changeTimerState() {
-        if (timerOn) {
-            numText.text = ""
-            button.text = "Start"
-            timerOn = false
-        }
-        else {
-            button.text = "Stop"
-            timerOn = true
+            myTimer?.changeTimerState()
         }
     }
 
@@ -95,7 +103,7 @@ class FirstActivity : AppCompatActivity() {
         if (stopped && timerOn) {
             myTimer?.let {
                 val startTime = it.millisInFuture
-                myTimer = CountUpTimer(it.millisUntilFinished, 1000)
+                myTimer = CountUpTimer(numText, button, it.millisUntilFinished, 1000)
                 myTimer?.millisInFuture = startTime
                 myTimer?.start()
             }
