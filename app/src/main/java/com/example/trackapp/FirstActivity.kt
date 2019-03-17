@@ -23,7 +23,9 @@ class FirstActivity : AppCompatActivity() {
         }
 
         override fun onFinish() {
-            textView.text = ""
+            showTime(0)
+            millisInFuture = defaultTime
+            millisUntilFinished = defaultTime
             button.text = "Start"
             timerOn = false
         }
@@ -41,7 +43,7 @@ class FirstActivity : AppCompatActivity() {
             }
         }
 
-        fun showTime() {
+        fun showTime(millisUntilFinished: Long = this.millisUntilFinished) {
             val count: Int = ((millisInFuture - millisUntilFinished)/1000).toInt()
             if (count % 100 in 10..19)
                 textView.text = "${hundredsNames[count / 100]} ${tenNames[count % 10]}"
@@ -55,6 +57,7 @@ class FirstActivity : AppCompatActivity() {
     lateinit var button: Button
     lateinit var numText: TextView
     var stopped = false
+    val defaultTime: Long = 5000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,8 +79,8 @@ class FirstActivity : AppCompatActivity() {
 
         button.setOnClickListener {
             if (!timerOn) {
-                val startTime: Long = myTimer?.millisInFuture?: 1000000
-                myTimer = CountUpTimer(numText, button, myTimer?.millisUntilFinished?: 1000000, 1000)
+                val startTime: Long = myTimer?.millisInFuture?: defaultTime
+                myTimer = CountUpTimer(numText, button, myTimer?.millisUntilFinished?: defaultTime, 1000)
                 myTimer?.millisInFuture = startTime
             }
             myTimer?.changeTimerState()

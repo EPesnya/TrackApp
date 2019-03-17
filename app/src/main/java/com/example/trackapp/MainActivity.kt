@@ -7,11 +7,13 @@ import android.os.CountDownTimer
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var splashScreen: CountDownTimer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (savedInstanceState == null)
-            object  : CountDownTimer(2000, 1000) {
+            splashScreen = object : CountDownTimer(2000, 1000) {
 
                 override fun onTick(millisUntilFinished: Long) {
 
@@ -23,9 +25,19 @@ class MainActivity : AppCompatActivity() {
             }.start()
     }
 
-    fun changeActivity() {
+    private fun changeActivity() {
         val intent = Intent(this, FirstActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    override fun onStop() {
+        splashScreen.cancel()
+        super.onStop()
+    }
+
+    override fun onStart() {
+        splashScreen.start()
+        super.onStart()
     }
 }
