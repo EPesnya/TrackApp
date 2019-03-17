@@ -8,6 +8,7 @@ import android.os.CountDownTimer
 class MainActivity : AppCompatActivity() {
 
     lateinit var splashScreen: CountDownTimer
+    var stopped = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +34,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         splashScreen.cancel()
+        stopped = true
         super.onStop()
     }
 
     override fun onStart() {
-        splashScreen.start()
+        if (stopped) changeActivity()
         super.onStart()
     }
 }
