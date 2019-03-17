@@ -7,23 +7,29 @@ import android.os.CountDownTimer
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var splashScreen: CountDownTimer
+    inner class SplashScreen(millisInFuture: Long, countDownInterval: Long = 1000): CountDownTimer(millisInFuture, countDownInterval) {
+
+        var millisUntilFinished: Long = 0
+
+        override fun onTick(millisUntilFinished: Long) {
+            this.millisUntilFinished = millisUntilFinished
+        }
+
+        override fun onFinish() {
+            changeActivity()
+        }
+    }
+
+    lateinit var mySplashScreen: SplashScreen
     var stopped = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (savedInstanceState == null)
-            splashScreen = object : CountDownTimer(2000, 1000) {
-
-                override fun onTick(millisUntilFinished: Long) {
-
-                }
-
-                override fun onFinish() {
-                    changeActivity()
-                }
-            }.start()
+        if (savedInstanceState == null) {
+            mySplashScreen = SplashScreen(2000)
+            mySplashScreen.start()
+        }
     }
 
     private fun changeActivity() {
@@ -33,13 +39,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        splashScreen.cancel()
+        mySplashScreen.cancel()
         stopped = true
         super.onStop()
     }
 
     override fun onStart() {
-        if (stopped) changeActivity()
+        if (stopped) {
+            mySplashScreen = SplashScreen(mySplashScreen.millisUntilFinished)
+            mySplashScreen.start()
+        }
         super.onStart()
     }
 }
